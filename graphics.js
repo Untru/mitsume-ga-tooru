@@ -16,9 +16,19 @@ shape(-12,-18,24,5,2,'#f5d37a',null);circle(2,-11,3.5,'#fffaf0');circle(3,-11,1.
 if(p.attack>0){ctx.beginPath();ctx.arc(12,-2,31,-1.15,1.1);ctx.strokeStyle='#fff2b5';ctx.lineWidth=6;ctx.stroke();ctx.beginPath();ctx.arc(12,-2,31,-1.05,1);ctx.strokeStyle='#f5c66d';ctx.lineWidth=2;ctx.stroke()}ctx.restore()}
 function bush(e,t){ctx.save();ctx.translate(e.x+18,e.y+18+Math.sin(t/17+e.base)*1.4);shape(-13,7,10,11,5,'#6c945a','#42694b',1.5);shape(5,7,10,11,5,'#6c945a','#42694b',1.5);circle(-10,0,13,'#78b766');circle(9,0,13,'#78b766');circle(0,-9,15,'#91cb79');circle(-7,-3,6,'#fff8df');circle(7,-3,6,'#fff8df');circle(-6,-3,2.5,'#405344');circle(8,-3,2.5,'#405344');line(-8,-11,-3,-9,'#476548',2);line(3,-9,8,-11,'#476548',2);line(-3,7,4,8,'#486148',2);ctx.restore()}
 function boss(b,t){ctx.save();ctx.translate(b.x,b.y);let wobble=Math.sin(t/22)*2;shape(-12,26+wobble,21,51,8,'#ad9a7d','#716b61',3);shape(82,26-wobble,21,51,8,'#ad9a7d','#716b61',3);shape(0,0,90,90,14,'#b5a48a','#706b60',3);shape(8,9,74,70,10,'#c6b596',null);shape(10,-13,70,18,5,'#cbbb99','#706b60',2);line(30,12,24,23,'#a3957d',2);line(24,23,30,29,'#a3957d',2);shape(14,26,25,18,6,'#f7e8b2','#827a6b',2);shape(53,26,25,18,6,'#f7e8b2','#827a6b',2);circle(29,35,3,'#62584e');circle(64,35,3,'#62584e');line(27,21,40,24,'#776858',4);line(53,24,68,21,'#776858',4);shape(32,58,28,10,4,'#6b6158',null);line(35,61,57,61,'#ead9bc',2);circle(13,8,5,'#83aa70');circle(18,5,4,'#94bd79');ctx.restore();text('СТРАЖ ХРАМА',b.x-15,b.y-35,12);for(let i=0;i<b.hp;i++)circle(b.x+20+i*13,b.y-22,4,'#e48969')}
-function draw(){let s=state,p=s.p;ctx.clearRect(0,0,W,H);let sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,s.eye?'#7773aa':'#79cfd1');sky.addColorStop(1,s.eye?'#ded0dd':'#f4e8bd');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);circle(806,85,52,s.eye?'#e8d6bd':'#fff0b8');cloud(160-s.camera*.08,95,1.1);cloud(530-s.camera*.08,135,.8);cloud(870-s.camera*.08,185,.65);
-ctx.save();ctx.translate(-s.camera*.18,0);for(let i=-1;i<9;i++)hill(i*300,455,440,220,i%2?'#9acdb0':'#8ac2aa');ctx.restore();ctx.save();ctx.translate(-s.camera*.35,0);for(let i=-1;i<10;i++)hill(i*230,455,330,145,i%2?'#76b693':'#85c0a0');ctx.restore();
-ctx.save();ctx.translate(-s.camera,0);for(let i=0;i<world;i+=260)ruin(i+30);for(let q of platforms)platform(q,s.eye);
+const templeArt = new Image();
+templeArt.src = 'assets/temple-background.png';
+templeArt.onload = () => { if (typeof state !== 'undefined') draw(); };
+function draw(){let s=state,p=s.p;ctx.clearRect(0,0,W,H);
+if (templeArt.complete && templeArt.naturalWidth) {
+  // Crop the painted foreground so the illustration never implies walkable ground.
+  const cropHeight = Math.floor(templeArt.naturalHeight * .77);
+  const artWidth = templeArt.naturalWidth / cropHeight * 470;
+  ctx.drawImage(templeArt, 0, 0, templeArt.naturalWidth, cropHeight, -s.camera * .30, 0, artWidth, 470);
+  ctx.fillStyle=s.eye?'#8170b955':'#fff3cf33';ctx.fillRect(0,0,W,470);
+  ctx.fillStyle=s.eye?'#39314f':'#28443f';ctx.fillRect(0,455,W,85);
+} else { drawBackdrop(s); }
+ctx.save();ctx.translate(-s.camera,0);for(let q of platforms)platform(q,s.eye);
 if(s.artifact){let pulse=3*Math.sin(s.time/12);circle(1107,262,25+pulse,'#fff5bd88');circle(1107,262,17,'#f8d98b');shape(1097,251,20,22,7,'#e68c6c','#9c705b',2);text('✦',1100,267,17,'#fff5d7')}
 for(const e of s.enemy)if(e.alive)bush(e,s.time);if(s.boss.alive)boss(s.boss,s.time);if(s.won){text('✦',2240,365,40,'#fff2a8');text('ТАПОК!',2210,395,15)}if(!p.inv||Math.floor(p.inv/6)%2)hero(p,s);ctx.restore();
-shape(18,17,160,42,12,'#fff9e9','#ffffff',2);text('♥ '.repeat(p.hp),30,45,22,'#e98272');shape(186,17,160,42,12,'#fff9e9','#ffffff',2);text(s.unlocked?(s.eye?'✦ ГЛАЗ ОТКРЫТ':'✦ ГЛАЗ: E'):'✦ ГЛАЗ СПИТ',198,43,13,'#45635a');if(s.noticeTime>0){shape(176,474,608,45,14,'#fff9e9','#ffffff',2);text(s.notice,192,502,14,'#536a5e')}if(s.won){ctx.fillStyle='#24463bc9';ctx.fillRect(0,0,W,H);shape(240,145,480,230,24,'#fff8e1','#ffffff',4);text('Храм пройден!',340,215,36);text('Дух: «Мой тапок! Я скучал по тебе…»',305,265,16);text('Нажми R, чтобы начать заново',324,315,14,'#a3755a')}}
+shape(18,17,160,42,12,'#fff9e9','#ffffff',2);text('♥ '.repeat(p.hp),30,45,22,'#e98272');shape(186,17,160,42,12,'#fff9e9','#ffffff',2);text(s.unlocked?(s.eye?'✦ ГЛАЗ ОТКРЫТ':'✦ ГЛАЗ: E'):'✦ ГЛАЗ СПИТ',198,43,13,'#45635a');if(s.noticeTime>0){shape(176,70,608,42,14,'#fff9e9','#ffffff',2);ctx.fillStyle='#405b51';ctx.font='800 14px Nunito, system-ui';ctx.fillText(s.notice,192,96,576)}if(s.won){ctx.fillStyle='#24463bc9';ctx.fillRect(0,0,W,H);shape(240,145,480,230,24,'#fff8e1','#ffffff',4);text('Храм пройден!',340,215,36);text('Дух: «Мой тапок! Я скучал по тебе…»',305,265,16);text('Нажми R, чтобы начать заново',324,315,14,'#a3755a')}}
