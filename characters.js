@@ -33,12 +33,12 @@ function hero(p,s){
   charPath([[-11,-70],[-6,-74],[-4,-70],[0,-74],[4,-71],[8,-72],[5,-68],[-2,-67],[-7,-68]],'#6c6970',null);
   // A visible third-eye mark on the headband; actual open eye glows only after E.
   shape(-13,-59,26,6,3,'#f1ce6c','#a66e4e',1);
-  if(s.eye){charEllipse(0,-56,7,5,'#ffe8ac','#a4639d',1.5);charEllipse(0,-56,2.4,3,'#764e93');circle(1,-57,1,'#fffdf0')}
+  if(s.eye||p.attack>0){charEllipse(0,-56,7,5,'#ffe8ac','#a4639d',1.5);charEllipse(0,-56,2.4,3,'#764e93');circle(1,-57,1,'#fffdf0')}
   else{charEllipse(0,-56,3,2.1,'#b37e5e');line(-2,-56,2,-56,'#774f4b',1)}
   charEllipse(-6,-50,4.3,5,'#fff9ed');charEllipse(6,-50,4.3,5,'#fff9ed');charEllipse(-5,-49.4,2,3,'#374853');charEllipse(7,-49.4,2,3,'#374853');circle(-4.5,-51,1,'#fff');circle(7.5,-51,1,'#fff');
   ctx.beginPath();ctx.moveTo(1,-44);ctx.quadraticCurveTo(5,-41,9,-44);ctx.strokeStyle='#a2524c';ctx.lineWidth=1.4;ctx.stroke();
   shape(-12,-38,24,7,3,'#f2c354','#a37143',1);charEllipse(10,-35,4,4,'#e4a943','#a37143',1);
-  if(p.attack>0){ctx.beginPath();ctx.arc(10,-33,36,-1.05,1.1);ctx.strokeStyle='#fff8bd';ctx.lineWidth=7;ctx.lineCap='round';ctx.stroke();ctx.beginPath();ctx.arc(10,-33,36,-1.05,1.1);ctx.strokeStyle='#f5b64e';ctx.lineWidth=2.5;ctx.stroke();circle(31,-58,3,'#fff7b1');}
+  if(p.attack>0){charEllipse(0,-56,10,8,'#fff3a366');charEllipse(0,-56,4,3,'#fffbe1');}
   ctx.restore();
 }
 function bush(e,t){

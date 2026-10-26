@@ -1,0 +1,19 @@
+const fs = require('fs'), vm = require('vm'), assert = require('assert');
+const noop=()=>{}, ctx=new Proxy({createLinearGradient:()=>({addColorStop:noop}),createRadialGradient:()=>({addColorStop:noop})},{get:(o,k)=>o[k]||noop,set:(o,k,v)=>(o[k]=v,true)});
+const els={game:{getContext:()=>ctx},overlay:{classList:{add:noop}},start:{}};const ev={};class Image{constructor(){this.complete=true;this.naturalWidth=1983;this.naturalHeight=793}};
+const box={document:{getElementById:id=>els[id]},window:{addEventListener:(n,f)=>ev[n]=f},performance:{now:()=>0},requestAnimationFrame:noop,Image,Math,Set};vm.createContext(box);for(const f of ['graphics.js','environment.js','characters.js','game.js'])vm.runInContext(fs.readFileSync(f,'utf8'),box,{filename:f});
+const run=s=>vm.runInContext(s,box);const get=()=>JSON.parse(run('JSON.stringify(state)'));const down=code=>ev.keydown({code,repeat:false,preventDefault:noop});const up=code=>ev.keyup({code});function frames(n){for(let i=0;i<n;i++)run('update(1)')};function move(n){down('KeyD');frames(n);up('KeyD')}function jump(n){down('KeyD');down('Space');frames(n);up('Space');up('KeyD')};function log(label){let s=get();console.log(label,Math.round(s.p.x),Math.round(s.p.y),s.p.ground,s.p.hp,s.unlocked,s.eye, s.enemy.map(e=>e.hp),s.boss.hp)}
+els.start.onclick();frames(20);move(120);log('edge');jump(40);log('cross');frames(10);down('KeyJ');up('KeyJ');frames(22);down('KeyJ');up('KeyJ');frames(45);log('shots');move(24);log('near step');jump(18);frames(30);log('first platform');jump(37);frames(8);log('artifact platform');
+
+assert(get().unlocked,'artifact must be reachable'); down('KeyE');up('KeyE');assert(get().eye,'hidden world opens');move(36);frames(30);log('second edge');jump(34);frames(5);log('hidden platform');jump(43);frames(5);log('far shore');
+const fire=()=>{down('KeyJ');up('KeyJ');frames(20)};assert(get().p.x>=1530&&get().unlocked,'cross hidden bridge');fire();fire();frames(20);log('second enemy');move(92);frames(3);log('boss approach');for(let i=0;i<5;i++)fire();frames(30);log('boss result');assert(get().won,'must defeat boss');down('KeyR');up('KeyR');assert(!get().won&&get().p.hp===3&&get().artifact&&get().shots.length===0,'restart clears state');console.log('PASS: played entire level with controls, artifact, bridge, shooting and restart');
+// Focused edge cases: falling always costs health, safe return, and no skipped bridge.
+run('reset(); state.p.inv=60; state.p.x=1400; state.p.y=610; state.checkpoint={x:1200,y:403}');frames(1);assert.equal(get().p.hp,2,'fall costs health during invulnerability');assert.equal(get().p.x,1200,'fall returns to safe checkpoint');
+run('reset(); state.p.x=1240;state.p.y=403;state.p.ground=true');jump(45);frames(30);assert(get().p.x<1530,'hidden bridge cannot be skipped');
+run('reset();state.p.x=2340;state.p.y=403;state.p.ground=true;state.boss.cooldown=0');frames(1);assert(get().bossShots.some(s=>s.vx>0),'boss shoots toward player on right');
+run('reset();state.p.x=950;state.p.y=403;state.p.face=-1;state.enemy[0].base=850;state.enemy[0].x=850');down('KeyJ');up('KeyJ');frames(20);assert(get().enemy[0].hp<2,'shots hit left-facing target');console.log('PASS: fall, invulnerability, mandatory bridge, boss direction, left-facing shot');
+
+run('reset();state.unlocked=true;state.eye=true;state.p.x=1400;state.p.y=338;state.p.ground=true');down('KeyE');up('KeyE');frames(4);assert(get().p.y>338&&!get().p.ground,'bridge vanishes when eye is closed');
+run('reset();state.p.x=1900;state.p.y=403;state.p.ground=true;state.bossShots=[{x:1908,y:435,vx:1,life:10}]');frames(1);assert.equal(get().p.hp,2,'boss projectile hurts player');
+run('reset();state.p.hp=1;state.p.x=1400;state.p.y=610');frames(1);assert.equal(get().p.hp,3,'zero HP restarts with full health');assert(get().artifact&&!get().unlocked,'zero HP restarts level');
+console.log('PASS: closing eye, boss damage, zero-health restart');
